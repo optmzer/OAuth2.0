@@ -5,6 +5,9 @@ from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem
 
+# Authentication imports
+from flask import session as login_session
+import random, string
 
 #Connect to Database and create database session
 engine = create_engine('sqlite:///restaurantmenu.db')
@@ -12,6 +15,17 @@ Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
+@app.route('/login')
+def show_login():
+    """Create a state token to prevent request
+    Store it in the session for later validation"""
+    state = ''.join(random.choice(
+        string.ascii_uppercase + string.digits) for x in range(32))
+    login_session['state'] = state
+    # Sent state to STATE property in html page
+    return render_template('login.html', STATE=state)
+
 
 
 #JSON APIs to view Restaurant Information
