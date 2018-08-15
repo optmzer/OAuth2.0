@@ -60,8 +60,62 @@
         }
     }); } }
   </script>
-  
-  
-  
   <!--END GOOGLE PLUS SIGN IN -->
+
+<!-- FACEBOOK SIGN IN -->
+<script>
+  window.fbAsyncInit = function(){
+    FB.init({
+      appId: '161038291404332',
+      cookie: true, //enable cookies
+      xfbml: true, // parse social plugins on this page
+      version: 'v2.2'
+    });
+  };
+
+// Load FB SDK asynchronously
+(function(d, s, id){
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if(d.getElementById(id)) return;
+  js = d.createElement(s); 
+  js.id =id;
+  js.src = "//connect.facebook.net/en_US/sdk.js";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
+
+function sendTokenToServer(){
+  var access_token = FB.getAuthResponse()['accessToken'];
+  console.log("Your FB access_token = ", access_token);
+  console.log("Welcome! We are fetching your info. Stand by...");
+  FB.api('/me', function(response){
+    console.log("Login successful as: " + response.name);
+    $.ajax({
+      type: 'POST',
+      url: '/fbconnect?state={{STATE}}',
+      processData: false,
+      data: access_token,
+      contentType: 'application/octet-stream; charset=utf-8',
+      success: function(result){
+        if(result){
+          $('#result').html('Login successful!</br>' + result + '</br> Redirecting...');
+          setTimeout(function(){
+            window.location.href = '/restaurant';
+          }, 10000);
+        }else{
+          $('#result').html('Failed to make server-side call. Check your config. ', result);
+        }
+      }
+    });
+  });
+}
+</script>
+
+<button>
+  <fb:login-button scope="public_profile, email" onlogin="sendTokenToServer();">
+    <a href="javascript:sendTokenToServer()">FB Login</a>
+  </fb:login-button>
+</button>
+
+<!-- END FACEBOOK SIGN IN -->
+
   </html>
