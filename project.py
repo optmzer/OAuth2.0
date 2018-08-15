@@ -154,14 +154,7 @@ def gdisconnect():
     h = httplib2.Http()
     result = h.request(url, 'GET', headers=headers)
     if(result[0]['status'] == '200'):
-        del login_session['access_token']
-        del login_session['gplus_id']
-        del login_session['username']
-        del login_session['email']
-        del login_session['picture']
-        response = make_response(
-            json.dumps("Successfully disconnected"), 200
-        )
+        response = make_response(json.dumps("Successfully disconnected"), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
@@ -448,7 +441,26 @@ def createUser(login_session):
     user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
 
-# @app.route('/disconnect')
+@app.route('/disconnect')
+def disconnect():
+    if 'provider' in login_session:
+        if login_session['provider'] == 'google':
+            gdisconnect()
+            # del login_session['gplus_id']
+            del login_session['access_token']
+        if login_session['provider'] == 'facebook':
+            fbdisconnect()
+            del login_session['facebook_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        del login_session['user_id']
+        del login_session['provider']
+        flash("You have been logged out successfully.")
+        return redirect(url_for('showRestaurants'))
+    else:
+        flash("Cannot find your session details or you were not logged in.")
+        return redirect(url_for('showRestaurants'))
 
 
 if __name__ == '__main__':
